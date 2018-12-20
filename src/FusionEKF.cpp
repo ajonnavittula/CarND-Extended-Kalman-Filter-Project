@@ -21,6 +21,9 @@ FusionEKF::FusionEKF() {
   R_laser_ = MatrixXd(2, 2);
   R_radar_ = MatrixXd(3, 3);
   H_laser_ = MatrixXd(2, 4);
+  H_laser_ << 1, 0, 0, 0,
+              0, 1, 0, 0;
+
   Hj_ = MatrixXd(3, 4);
 
 
@@ -38,7 +41,7 @@ FusionEKF::FusionEKF() {
    * TODO: Set the process and measurement noises
    */
   //Initialization of EKF variables
-  VectorXd x_;
+  ekf_.x_ = VectorXd(4);
 
   ekf_.P_ = MatrixXd(4,4);
   
@@ -158,9 +161,17 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
+    ekf_.H_ = Hj_;
+    ekf_.R_ = R_radar_
+    
+    ekf_.UpdateEKF(measurement_pack.raw_measurements_);
 
   } else {
     // TODO: Laser updates
+    ekf_.H_ = H_laser_;
+    ekf_.R_ = R_laser_
+
+    ekf_.Update(measurement_pack.raw_measurements_);
 
   }
 

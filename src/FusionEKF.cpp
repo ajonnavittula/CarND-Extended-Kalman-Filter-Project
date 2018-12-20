@@ -23,6 +23,7 @@ FusionEKF::FusionEKF() {
   H_laser_ = MatrixXd(2, 4);
   Hj_ = MatrixXd(3, 4);
 
+
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
               0, 0.0225;
@@ -36,7 +37,16 @@ FusionEKF::FusionEKF() {
    * TODO: Finish initializing the FusionEKF.
    * TODO: Set the process and measurement noises
    */
+  //Initialization of EKF variables
+  VectorXd x_;
 
+  ekf_.P_ = MatrixXd(4,4);
+  
+
+  ekf_.F_ = MatrixXd(4,4);  
+
+
+  ekf_.Q_ = MatrixXd(4,4);
 
 }
 
@@ -64,13 +74,36 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       // TODO: Convert radar from polar to cartesian coordinates 
       //         and initialize state.
+      double rho = measurement_pack.raw_measurements_[0];
+      double phi = measurement_pack.raw_measurements_[1];
+      double rho_dot = measurement_pack.raw_measurements_[2];
 
+      ekf_.x_ << rho*cos(phi),
+                 rho*sin(phi),
+                 rho_dot*cos(phi),
+                 rho_dot*sin(phi);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      // TODO: Initialize state.
-
+      
+      // Initialize position vector to measured values
+      ekf_.x_ << measurement_pack.raw_measurements_[0],
+                 measurement_pack.raw_measurements_[1],
+                 0,
+                 0;
     }
 
+    // Set timestamp value to measurement timestamp
+    previous_timestamp_ = measurement_pack.timestamp_;
+
+    ekf_.F_ << 1, 0, 1, 0,
+               0, 1, 0, 1,
+               0, 0, 1, 0,
+               0, 0, 0, 1;
+
+    ekf_.P_ << 1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;
     // done initializing, no need to predict or update
     is_initialized_ = true;
     return;
@@ -79,6 +112,30 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   /**
    * Prediction
    */
+  // State transition matrix updation
+
+  //Delta T in seconds
+  double dt = (measurement_pack.timestamp_ - previous_timestamp_)/1000000.0;
+  previous_timestamp_ = measurement_pack.timestamp_;
+
+  double dt2 = dt*dt;
+  double dt3 = dt2*dt;
+  double dt4 = dt3*dt;
+
+
+  // Give noise variance values noise ax = 9 and noise ay = 9
+  float noise_ax = 9;
+  float noise_ay = 9;
+
+  // Update State transition matrix with current dt
+  ekf_.F_(0,2) = dt;
+  ekf_.F_(1,3) = dt;
+
+  // Noise covariance matrix updation
+  ekf_.Q_ << (dt4*noise_ax)/4, 0, (dt3*noise_ax)/2, 0,
+              0, (dt4*noise_ay)/4, 0, (dt3*noise_ay)/2,
+              (dt3*noise_ax)/2, 0, dt2*noise_ax, 0,
+              0, dt3*noise_ay/2, 0, dt2*noise_ay;
 
   /**
    * TODO: Update the state transition matrix F according to the new elapsed time.

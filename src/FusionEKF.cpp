@@ -107,8 +107,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     ekf_.P_ << 1, 0, 0, 0,
                0, 1, 0, 0,
-               0, 0, 100, 0,
-               0, 0, 0, 100;
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;
     // done initializing, no need to predict or update
 
     is_initialized_ = true;
@@ -121,12 +121,12 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   // State transition matrix updation
 
   //Delta T in seconds
-  double dt = (measurement_pack.timestamp_ - previous_timestamp_)/1000000.0;
+  float dt = (measurement_pack.timestamp_ - previous_timestamp_)/1000000.0;
   previous_timestamp_ = measurement_pack.timestamp_;
 
-  double dt2 = dt*dt;
-  double dt3 = dt2*dt;
-  double dt4 = dt3*dt;
+  float dt2 = dt*dt;
+  float dt3 = dt2*dt;
+  float dt4 = dt3*dt;
 
 
   // Give noise variance values noise ax = 9 and noise ay = 9
@@ -142,7 +142,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
               0, (dt4*noise_ay)/4, 0, (dt3*noise_ay)/2,
               (dt3*noise_ax)/2, 0, dt2*noise_ax, 0,
               0, dt3*noise_ay/2, 0, dt2*noise_ay;
-  std::cout<<"Q Matrix completed\n";
+  //std::cout<<"Q Matrix completed\n";
   /**
    * TODO: Update the state transition matrix F according to the new elapsed time.
    * Time is measured in seconds.
@@ -151,7 +151,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   ekf_.Predict();
-  std::cout<<"EKF predicted\n";
+  //std::cout<<"EKF predicted\n";
   /**
    * Update
    */
@@ -164,20 +164,21 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
-    std::cout<<"Calculating Jacobian\n";
+    //std::cout<<"Calculating Jacobian\n";
+    Tools tools;
     ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
     ekf_.R_ = R_radar_;
-    std::cout<<"Updating EKF for radar\n";
+    //std::cout<<"Updating EKF for radar\n";
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
-    std::cout<<"EKF Update complete\n";
+    //std::cout<<"EKF Update complete\n";
 
   } else {
     // TODO: Laser updates
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
-    std::cout<<"Updating KF\n";
+    //std::cout<<"Updating KF\n";
     ekf_.Update(measurement_pack.raw_measurements_);
-    std::cout<<"KF updated\n";
+    //std::cout<<"KF updated\n";
   }
 
   // print the output

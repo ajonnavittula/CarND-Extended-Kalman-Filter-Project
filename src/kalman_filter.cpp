@@ -51,10 +51,10 @@ void KalmanFilter::Update(const VectorXd &z) {
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
   
   // Calcualte EKF gain
-  double px = x_(0);
-  double py = x_(1);
-  double vx = x_(2);
-  double vy = x_(3);
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
 
   if(px == 0 && py == 0)
   {
@@ -62,15 +62,30 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     return;
   }
 
-  double h1 = sqrt(px*px + py*py);
-  double h2 = atan2(py,px);
-  double h3 = (px*vx + py*vy)/h1;
+  float h1 = sqrt(px*px + py*py);
+  float h2 = atan2(py,px);
+  float h3 = (px*vx + py*vy)/h1;
+
+  if(h1 < .00001) {
+    px += .001;
+    py += .001;
+    h1 = sqrt(px * px + py * py);
+}
+
   VectorXd z_pred(3);
   z_pred << h1,
             h2,
             h3;
-  cout<<"Created variables for EKF\n";
+  //cout<<"Created variables for EKF\n";
   VectorXd y = z - z_pred;
+
+  const float _PI_ = 3.14159265;
+
+  while (y(1) > _PI_)
+  	{y(1) -= 2 * _PI_;}
+  while (y(1) < -_PI_)
+  	{y(1) += 2 * _PI_;}
+
   MatrixXd Ht = H_.transpose();
 
   MatrixXd S = H_ * P_ * Ht + R_;
@@ -78,11 +93,11 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   MatrixXd PHt = P_ * Ht;
 
   MatrixXd K = PHt * Si;
-  cout<<"Estimated EKF gain\n";
+  //cout<<"Estimated EKF gain\n";
   //New estimated positions
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size,x_size);
   P_ = (I - K * H_) * P_;
-  cout<<"Calcualted new states\n";
+  //cout<<"Calcualted new states\n";
 }

@@ -36,11 +36,7 @@ FusionEKF::FusionEKF() {
   R_radar_ << 0.09, 0, 0,
               0, 0.0009, 0,
               0, 0, 0.09;
-
-  /**
-   * TODO: Finish initializing the FusionEKF.
-   * TODO: Set the process and measurement noises
-   */
+              
   //Initialization of EKF variables
   ekf_.x_ = VectorXd(4);
 
@@ -65,11 +61,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   if (!is_initialized_) {
-    /**
-     * TODO: Initialize the state ekf_.x_ with the first measurement.
-     * TODO: Create the covariance matrix.
-     * You'll need to convert radar from polar to cartesian coordinates.
-     */
 
     // first measurement
     cout << "EKF: " << endl;
@@ -77,8 +68,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      // TODO: Convert radar from polar to cartesian coordinates 
-      //         and initialize state.
       double rho = measurement_pack.raw_measurements_[0];
       double phi = measurement_pack.raw_measurements_[1];
       double rho_dot = measurement_pack.raw_measurements_[2];
@@ -143,12 +132,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
               (dt3*noise_ax)/2, 0, dt2*noise_ax, 0,
               0, dt3*noise_ay/2, 0, dt2*noise_ay;
   //std::cout<<"Q Matrix completed\n";
-  /**
-   * TODO: Update the state transition matrix F according to the new elapsed time.
-   * Time is measured in seconds.
-   * TODO: Update the process noise covariance matrix.
-   * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
-   */
+
 
   ekf_.Predict();
   //std::cout<<"EKF predicted\n";
@@ -156,11 +140,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    * Update
    */
 
-  /**
-   * TODO:
-   * - Use the sensor type to perform the update step.
-   * - Update the state and covariance matrices.
-   */
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // TODO: Radar updates
@@ -173,7 +152,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     //std::cout<<"EKF Update complete\n";
 
   } else {
-    // TODO: Laser updates
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
     //std::cout<<"Updating KF\n";

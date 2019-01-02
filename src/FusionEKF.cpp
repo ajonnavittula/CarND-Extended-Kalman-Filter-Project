@@ -36,7 +36,7 @@ FusionEKF::FusionEKF() {
   R_radar_ << 0.09, 0, 0,
               0, 0.0009, 0,
               0, 0, 0.09;
-              
+
   //Initialization of EKF variables
   ekf_.x_ = VectorXd(4);
 
@@ -107,6 +107,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   /**
    * Prediction
    */
+
   // State transition matrix updation
 
   //Delta T in seconds
@@ -136,13 +137,14 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   ekf_.Predict();
   //std::cout<<"EKF predicted\n";
+  
   /**
    * Update
    */
 
 
-  if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-    // TODO: Radar updates
+  if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) 
+  {
     //std::cout<<"Calculating Jacobian\n";
     Tools tools;
     ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
@@ -151,7 +153,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
     //std::cout<<"EKF Update complete\n";
 
-  } else {
+  }
+  else 
+  {
     ekf_.H_ = H_laser_;
     ekf_.R_ = R_laser_;
     //std::cout<<"Updating KF\n";
@@ -160,6 +164,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   }
 
   // print the output
-  cout << "x_ = " << ekf_.x_ << endl;
-  cout << "P_ = " << ekf_.P_ << endl;
+  //cout << "x_ = " << ekf_.x_ << endl;
+  //cout << "P_ = " << ekf_.P_ << endl;
 }

@@ -17,12 +17,18 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   VectorXd rmse(4);
   rmse << 0,0,0,0;
 
+  //Used the RMSE code from EKF lectures
+
   // check the validity of the following inputs:
   //  * the estimation vector size should not be zero
   //  * the estimation vector size should equal ground truth vector size
-  if (estimations.size() != ground_truth.size()
-      || estimations.size() == 0) {
-    cout << "Invalid estimation or ground_truth data" << endl;
+  if (estimations.size() != ground_truth.size()) {
+    cout << "Size error: Unequal estimations or ground_truth" << endl;
+    return rmse;
+  }
+  else if (estimations.size() == 0)
+  {
+    cout<< "Size error: Empty estimations vector"<<endl;
     return rmse;
   }
 
@@ -52,15 +58,15 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   MatrixXd Hj_(3,4);
 
   // Some variables and calculations for brevity
-  double px = x_state(0);
-  double py = x_state(1);
-  double vx = x_state(2);
-  double vy = x_state(3);
-  double C1 = px*px + py*py;
-  double C2 = sqrt(C1);
-  double C3 = vx*py - vy*px;
-  double C4 = vy*px - vx*py;
-  double C5 = pow(C2,3);
+  float px = x_state(0);
+  float py = x_state(1);
+  float vx = x_state(2);
+  float vy = x_state(3);
+  float C1 = px*px + py*py;
+  float C2 = sqrt(C1);
+  float C3 = vx*py - vy*px;
+  float C4 = vy*px - vx*py;
+  float C5 = pow(C2,3);
 
   // Jacobian calculation
   if(px == 0 && py == 0)

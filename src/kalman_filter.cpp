@@ -66,17 +66,10 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float h2 = atan2(py,px);
   float h3 = (px*vx + py*vy)/h1;
 
-  if(h1 < .00001) 
-  {
-    px += .001;
-    py += .001;
-    h1 = sqrt(px * px + py * py);
-  }
-
   VectorXd hofx(3);
   hofx << h1,
-            h2,
-            h3;
+          h2,
+          h3;
   //cout<<"Created variables for EKF\n";
   VectorXd y = z - hofx;
 
@@ -100,7 +93,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   MatrixXd K = PHt * Si;
   //cout<<"Estimated EKF gain\n";
-  
+
   //New estimated positions
   x_ = x_ + (K * y);
   long x_size = x_.size();
